@@ -1,0 +1,29 @@
+package com.gpa.planner.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Task {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "estimated_time")
+    private int estimatedTime;
+
+    @Column(name = "priority")
+    private String priority;
+
+    private String title;
+    private String status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "goal_id")
+    @com.fasterxml.jackson.annotation.JsonBackReference
+    private Goal goal;
+}

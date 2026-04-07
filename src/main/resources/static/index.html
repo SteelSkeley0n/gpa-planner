@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPA Task Dashboard</title>
+</head>
+<body>
+
+<h2>Tasks</h2>
+<button onclick="loadTasks()">Load Tasks</button>
+
+<table border="1" id="taskTable">
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Priority</th>
+        <th>Time</th>
+        <th>Action</th>
+    </tr>
+</table>
+
+<script>
+
+    async function loadTasks() {
+        const res = await fetch("http://localhost:8080/tasks");
+        const tasks = await res.json();
+
+        const table = document.getElementById("taskTable");
+
+        table.innerHTML = `
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Reamining Time</th>
+        </tr>
+    `;
+
+        tasks.forEach(task => {
+            const row = `
+            <tr>
+                <td>${task.id}</td>
+                <td>${task.title}</td>
+                <td>${task.priority}</td>
+
+                <td>
+                    <button onclick="sendFeedback(${task.id}, 'SUCCESS')">SUCCESS</button>
+                    <button onclick="sendFeedback(${task.id}, 'FAIL')">FAIL</button>
+                </td>
+                <td>${task.status}</td>
+            </tr>
+        `;
+            table.innerHTML += row;
+        });
+    }
+
+    async function sendFeedback(taskId, result) {
+        await fetch(`http://localhost:8080/feedback?taskId=${taskId}&result=${result}`, {
+            method: "POST"
+        });
+
+        alert("Feedback sent");
+
+        // reload to see changes
+        loadTasks();
+    }
+
+</script>
+
+</body>
+</html>
