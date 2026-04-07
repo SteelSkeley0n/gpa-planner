@@ -19,6 +19,9 @@ public class Goal {
     private LocalDate deadline;
     private String difficulty;
 
+    @Column(name = "remaining_time")
+    private Integer remainingTime;
+
     @ManyToOne
     private User user;
 }

@@ -1,7 +1,7 @@
 package com.gpa.planner.controller;
 
 import com.gpa.planner.model.Task;
-import com.gpa.planner.service.TaskService;
+import com.gpa.planner.repository.TaskRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,19 +10,14 @@ import java.util.List;
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
+    private final TaskRepository taskRepository;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
+    public TaskController(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
     @GetMapping
     public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
-    }
-
-    @PutMapping("/{id}")
-    public Task updateStatus(@PathVariable Long id, @RequestParam String status) {
-        return taskService.updateStatus(id, status);
+        return taskRepository.findAll();
     }
 }

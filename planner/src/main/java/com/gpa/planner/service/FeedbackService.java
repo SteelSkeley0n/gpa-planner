@@ -6,7 +6,9 @@ import com.gpa.planner.model.Task;
 import com.gpa.planner.repository.FeedbackRepository;
 import com.gpa.planner.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,19 +26,60 @@ public class FeedbackService {
         this.feedbackManager = feedbackManager;
     }
 
-    public FeedbackEvent saveFeedback(FeedbackEvent feedback) {
+    @Transactional
+    public FeedbackEvent processFeedback(Long taskId, String result) {
 
-        Task task = feedback.getTask();
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        // Existing adaptive logic (keep this)
-        feedbackManager.adjustTaskBasedOnFeedback(task, feedback.getResult());
+        // Get past feedback
+        List<FeedbackEvent> feedbacks = feedbackRepository.findByTaskId(taskId);
 
-        taskRepository.save(task);
+        int score = 0;
+
+        for (FeedbackEvent f : feedbacks) {
+            if ("SUCCESS".equalsIgnoreCase(f.getResult())) {
+                score++;
+            } else {
+                score--;
+            }
+        }
+
+        // Include current feedback
+        if ("SUCCESS".equalsIgnoreCase(result)) {
+            score++;
+        } else {
+            score--;
+        }
+
+        // Apply task adaptation
+        int originalTime = task.getEstimatedTime();
+
+        feedbackManager.adjustTaskBasedOnScore(task, score, result);
+
+        // ----------------------------
+        // 🔥 Goal Time Update
+        // ----------------------------
+        if ("SUCCESS".equalsIgnoreCase(result)) {
+            if (task.getGoal() != null && task.getGoal().getRemainingTime() != null) {
+
+                int updatedTime = task.getGoal().getRemainingTime() - originalTime;
+
+                task.getGoal().setRemainingTime(Math.max(updatedTime, 0));
+            }
+        }
+
+        task = taskRepository.saveAndFlush(task);
+
+        FeedbackEvent feedback = new FeedbackEvent();
+        feedback.setTask(task);
+        feedback.setResult(result);
+        feedback.setTimestamp(LocalDateTime.now());
 
         return feedbackRepository.save(feedback);
     }
 
-    // NEW METHOD (for AI planning adaptation)
+    // Existing method (unchanged)
     public String getDifficultyAdjustment(Long goalId) {
 
         List<FeedbackEvent> feedbacks = feedbackRepository.findAll();

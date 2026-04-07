@@ -13,10 +13,14 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
-    private String status; // PENDING, DONE
-    private String priority; // LOW, MEDIUM, HIGH
+    @Column(name = "estimated_time")
     private int estimatedTime;
+
+    @Column(name = "priority")
+    private String priority;
+
+    private String title;
+    private String status;
 
     @ManyToOne
     private Goal goal;

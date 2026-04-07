@@ -16,7 +16,7 @@ public class AgentPlanner {
 
         int numberOfTasks;
 
-        // 🎯 Basic AI logic (decision making)
+        // Basic AI logic (decision making)
         switch (goal.getDifficulty().toUpperCase()) {
             case "HIGH":
                 numberOfTasks = 6;
@@ -27,6 +27,8 @@ public class AgentPlanner {
             default:
                 numberOfTasks = 2;
         }
+
+        int totalEstimatedTime = 0; // 🔥 track total time
 
         for (int i = 1; i <= numberOfTasks; i++) {
             Task task = new Task();
@@ -42,12 +44,19 @@ public class AgentPlanner {
             }
 
             // Time estimation logic
-            task.setEstimatedTime(2 + i);
+            int time = 2 + i;
+            task.setEstimatedTime(time);
+
+            // 🔥 accumulate total time
+            totalEstimatedTime += time;
 
             task.setGoal(goal);
 
             tasks.add(task);
         }
+
+        // 🔥 set goal remaining time automatically
+        goal.setRemainingTime(totalEstimatedTime);
 
         return tasks;
     }
